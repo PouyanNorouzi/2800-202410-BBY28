@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "2800-202410-bby28": "file:",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
