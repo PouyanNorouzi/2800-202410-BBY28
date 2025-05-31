@@ -31,7 +31,7 @@ app.set("view engine", "ejs");
 
 const cloudinary = require("cloudinary");
 const axios = require("axios");
-const { error } = require("console");
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_CLOUD_KEY,
@@ -45,29 +45,23 @@ app.use(
     store: mongoStore,
     saveUninitialized: false,
     resave: true,
-  })
+  }),
 );
 
 // Nodemailer setup
 // Transporter is going to be an object that is able to send mail
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
-    type: "OAuth2",
     user: process.env.NODEMAILER_USER,
-    clientId: process.env.OAUTH_CLIENT_ID,
-    clientSecret: process.env.OAUTH_CLIENT_SECRET,
-    refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-    accessUrl: "https://accounts.google.com/o/oauth2/token",
+    pass: process.env.NODEMAILER_PASS,
   },
 });
 
 // Check if conncetion works
 transporter.verify(function (error, success) {
   if (error) {
-    console.log(error);
+    console.log("Error connecting to the gmail server", error);
   } else {
     console.log("nodemailer is ready");
   }
@@ -214,7 +208,7 @@ app.post(
           req.session.picId = result.url;
           app.locals.picId = result.url;
         },
-        { folder: "profilePics" }
+        { folder: "profilePics" },
       );
     } else {
       update = { $set: { username: username, email: email, city: city } };
@@ -229,7 +223,7 @@ app.post(
     req.session.email = email;
 
     res.redirect("/profile");
-  }
+  },
 );
 
 // smartAI chat page
@@ -273,7 +267,7 @@ app.post("/checklistSave", sessionValidation, async (req, res) => {
   req.session.checklist = array;
   await userCollection.updateOne(
     { email: req.session.email },
-    { $set: { checklist: array } }
+    { $set: { checklist: array } },
   );
   res.redirect("/checklist");
 });
@@ -306,7 +300,7 @@ app.post("/forgotPasswordSubmit", async (req, res) => {
   var idExpireTime = Date.now() + 3600000; //1 hour expire time
   const user = await userCollection.findOneAndUpdate(
     { email: email },
-    { $set: { resetPassId: resetPassId, resetPassIdExpireTime: idExpireTime } }
+    { $set: { resetPassId: resetPassId, resetPassIdExpireTime: idExpireTime } },
   );
   const currentUrl = req.protocol + "://" + req.get("host");
 
@@ -457,7 +451,7 @@ app.post("/resetPasswordSubmit", async (req, res) => {
   var hashedPassword = await bcrypt.hash(newPassword, saltRounds);
   await userCollection.updateOne(
     { username: username },
-    { $set: { password: hashedPassword } }
+    { $set: { password: hashedPassword } },
   );
   // Redirect to login page
   res.redirect("/login");
@@ -528,7 +522,7 @@ app.post("/predictDamage", async (req, res) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-      }
+      },
     );
 
     res.json({ prediction: response.data.choices[0].message.content });
